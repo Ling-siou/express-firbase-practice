@@ -11,7 +11,10 @@
     <input type="text" id="" name="">
     <input type="submit" id="send" value="submit">
     <ul>
-        <li> <input type="button" value="X"></li>
+        <!-- <li> <input type="button" value="X"></li> -->
+        <% for(item in todoList){ %>
+            <li> <%- todoList[item].content %> </li>
+        <% } %>
     </ul>
     <script src="/js/todo.js"></script>
 </body>

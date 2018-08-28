@@ -4,7 +4,7 @@ var engine = require('ejs-locals');
 var bodyParser = require('body-parser');
 var admin = require("firebase-admin");
 
-var serviceAccount = require("./express-firebase-liao-firebase-adminsdk-8z2zx-efe9272fd9.json");
+var serviceAccount = require("./express-firebase-liao-firebase-adminsdk-8z2zx-afeb01a9c7.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -29,16 +29,19 @@ app.use(express.static('public'))
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:false}))
 
-fireData.ref('todos').set({'title': '標題'})
+fireData.ref('bin').set({'title': 'Title 8/27(12:20 am)'})
 
 //路由
 app.get('/',function(req,res){
-
-    fireData.ref('todos').once('value', function(snapshot){
-        var data = snapshot.val();
-        var title = data.title;
-        res.render('index', {'title': title});  
-    })
+    fireData.ref().once('value', function(snapshot){
+        var data = snapshot.val().todos;
+        var title = snapshot.val().bin.title;
+        res.render('index', {'title': title, "todoList": data});  
+    });
+    // fireData.ref('todos').once('value', function(snapshot){
+    //     var data = snapshot.val();
+    //     res.render('index', {'title': title, "todoList": data});  
+    // })
     
 })
 
@@ -49,12 +52,32 @@ app.post('/addTodo', function(req, res){
     var contentRef = fireData.ref('todos').push();
     contentRef.set({'content': content}).then(function(){
         fireData.ref('todos').once('value', function(snapshot){
-            res.send(snapshot.val())
+            res.send(
+                {
+                    "success": true,
+                    "result": snapshot.val(),
+                    "message": "POST success!"
+                }
+            )
         })
     })
 
 })
 
+
+app.post('/removeTodo', function(req, res){
+    var _id = req.body.id;
+    fireData.ref('todos').child(_id).remove()
+    .then(function(){
+        fireData.ref('todos').once('value', function(snapshot){
+            res.send({
+                "success": true,
+                "result": snapshot.val(),
+                "message": "Remove success."
+            })
+        })
+    })
+})
 
 // 監聽 port
 var port = process.env.PORT || 3000;
